@@ -8,16 +8,19 @@ import java.io.IOException;
 
 public class ImageParser {
 
+    //background
     public static final String BACKGROUND_IMAGE_NAME="level1.jpg";
 
+    private static BufferedImage backgroundImage=null;
+    //balls
     public static final Color colors[]={Color.BLUE,Color.YELLOW,Color.GREEN,Color.RED,Color.MAGENTA,Color.WHITE};
     public static final String ballFileNames[]={"blueBall.png","yellowBall.png","greenBall.png","redBall.png","magnetaBall.png","whiteBall.png"};
     public static final int COLORS_NUM=colors.length;
 
-    private BufferedImage ballImages[]=null;
-    private BufferedImage backgroundImage=null;
+    private static BufferedImage ballImages[]=null;
 
-    ImageParser(){
+    //
+    static{
         try {
             backgroundImage=ImageIO.read(new File(BACKGROUND_IMAGE_NAME));
 
@@ -30,7 +33,8 @@ public class ImageParser {
         }
     }
 
-    BufferedImage getBallImage(Color color){
+    //methods
+    public static BufferedImage getBallImage(Color color){
         for(int i=0;i<COLORS_NUM;i++){
             if(color==colors[i]){
                 return ballImages[i];
@@ -38,7 +42,7 @@ public class ImageParser {
         }
         return null;
     }
-    public BufferedImage getBackgroundImage() {
+    public static BufferedImage getBackgroundImage() {
         return backgroundImage;
     }
 }

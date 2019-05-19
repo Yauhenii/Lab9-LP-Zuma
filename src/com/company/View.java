@@ -24,7 +24,7 @@ public class View extends JFrame implements Observer {
     }
 
     private void setGamePaneProperties() {
-        gamePane=new GamePane(parser);
+        gamePane=new GamePane();
     }
 
     void setWindowProperties(){

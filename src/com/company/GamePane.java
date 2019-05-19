@@ -9,22 +9,19 @@ import java.awt.image.BufferedImage;
 
 public class GamePane extends JLayeredPane {
 
-    ImageParser parser;
     ImageHandler handler;
 
-    GamePane(ImageParser parser){
-        this.parser=parser;
-        handler=new ImageHandler();
+    GamePane(){
         setSize(getPreferredSize());
     }
 
     @Override
     public Dimension getPreferredSize() {
-        return new Dimension(parser.getBackgroundImage().getWidth(),parser.getBackgroundImage().getHeight());
+        return new Dimension(ImageParser.getBackgroundImage().getWidth(),ImageParser.getBackgroundImage().getHeight());
     }
 
     void addLabel(Ball ball){
-        BufferedImage image=parser.getBallImage(ball.getColor());
+        BufferedImage image=ImageParser.getBallImage(ball.getColor());
         Dimension dimension=new Dimension(image.getWidth(),image.getHeight());
 
         JLabel label=new JLabel(new ImageIcon(image));
