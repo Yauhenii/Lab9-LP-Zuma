@@ -14,6 +14,7 @@ public class View extends JFrame implements Observer {
     GamePane gamePane;
     MainMenuPane menuPane;
     WinPane winPane;
+    WinEndPane winEndPane;
     LosePane losePane;
 
     JMenuBar menuBar;
@@ -27,6 +28,7 @@ public class View extends JFrame implements Observer {
         setMainMenuPaneProperties();
         setGamePaneProperties();
         setWinPaneProperties();
+        setWinEndPaneProperties();
         setLosePaneProperties();
 //        setMenuProperties();
 
@@ -38,6 +40,10 @@ public class View extends JFrame implements Observer {
 
     private void setLosePaneProperties(){
         losePane=new LosePane();
+    }
+
+    private void setWinEndPaneProperties(){
+        winEndPane=new WinEndPane();
     }
 
     private void setWinPaneProperties(){

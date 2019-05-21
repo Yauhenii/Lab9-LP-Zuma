@@ -19,7 +19,7 @@ public class Ball extends JLabel{
 
         setSize(dimension);
         setLocation(point);
-        setBorder(new LineBorder(Color.RED,1));
+//        setBorder(new LineBorder(Color.RED,1));
     }
 
     public Ball(Ball ball){

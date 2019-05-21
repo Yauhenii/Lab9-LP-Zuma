@@ -3,15 +3,14 @@ package com.company;
 import javax.swing.*;
 import java.awt.*;
 
-public class WinPane extends JLayeredPane {
+public class WinEndPane extends JLayeredPane {
 
     public static final Dimension buttonDim=new Dimension(250,89);
 
-    public JLabel playButton;
     public JLabel exitButton;
     public JPanel backgroundPane;
 
-    WinPane(){
+    WinEndPane(){
         setSize(getPreferredSize());
         setBounds(new Rectangle(new Point(0, 0), ImageParser.getBackgroundDim()));
         setBackgroundProperties();
@@ -20,11 +19,8 @@ public class WinPane extends JLayeredPane {
 
     private void setButtonsProperties(){
         exitButton = new JLabel(new ImageIcon("exitButton.png"));
-        playButton = new JLabel(new ImageIcon("playButton.png"));
-        playButton.setBounds((getWidth()-buttonDim.width)/2,(getHeight()+0*buttonDim.height)/2,buttonDim.width,buttonDim.height);
         exitButton.setBounds((getWidth()-buttonDim.width)/2,(getHeight()+2*buttonDim.height)/2,buttonDim.width,buttonDim.height);
         backgroundPane.add(exitButton,JLayeredPane.PALETTE_LAYER);
-        backgroundPane.add(playButton,JLayeredPane.PALETTE_LAYER);
     }
 
     private void setBackgroundProperties(){

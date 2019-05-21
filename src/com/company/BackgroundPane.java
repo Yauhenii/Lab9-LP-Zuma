@@ -7,6 +7,7 @@ public class BackgroundPane extends JPanel {
 
     public void setLevel(int level) {
         this.level = level;
+        repaint();
     }
 
     private int level;

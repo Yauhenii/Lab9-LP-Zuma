@@ -1,16 +1,15 @@
 package com.company;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Collections;
 
 public class Controller {
 
-    public final int TIMER_SPEED=90;
-    public final int BALL_ADDING_TIMER_SPEED=(int) (TIMER_SPEED*13.5);
-    public final int BALL_FLYING_TIMER_SPEED=(int) (TIMER_SPEED*0.2);
+    int level=1;
+    public int TIMER_SPEED=90;
+    public int BALL_ADDING_TIMER_SPEED=(int) (TIMER_SPEED*13.5);
+    public int BALL_FLYING_TIMER_SPEED=(int) (TIMER_SPEED*0.2);
 
 
     public int width;
@@ -19,6 +18,7 @@ public class Controller {
     public int radius;
 
     private int ballTotalNum=30;
+    private int ballTotalNum2=40;
 
     Timer timer;
     Timer ballAddingTimer;
@@ -146,7 +146,11 @@ public class Controller {
                                 System.out.println(model.size());
                             }
                             if(model.size()==1){
-                                showWinPane();
+                                if(level==1) {
+                                    showWinPane();
+                                } else{
+                                    showWinEndPane();
+                                }
                             }
                             //backtrack
                             if(trigger){
@@ -251,6 +255,7 @@ public class Controller {
             @Override
             public void mouseClicked(MouseEvent e) {
                 showGamePane();
+//                showWinPane();
             }
         });
         view.menuPane.exitButton.addMouseListener(new MouseAdapter() {
@@ -265,12 +270,25 @@ public class Controller {
                 view.dispatchEvent(new WindowEvent(view,WindowEvent.WINDOW_CLOSING));
             }
         });
+        view.winPane.playButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                showGamePane2();
+            }
+        });
+        view.winEndPane.exitButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                view.dispatchEvent(new WindowEvent(view,WindowEvent.WINDOW_CLOSING));
+            }
+        });
         view.losePane.exitButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 view.dispatchEvent(new WindowEvent(view,WindowEvent.WINDOW_CLOSING));
             }
         });
+
 
     }
 
@@ -288,6 +306,9 @@ public class Controller {
         return (result.getWidth() > 0 && result.getHeight() > 0);
     }
     public void showGamePane(){
+        //set level
+        level=1;
+        //change
         view.remove(view.menuPane);
         view.setContentPane(view.gamePane);
         player.play();
@@ -296,9 +317,88 @@ public class Controller {
         ballAddingTimer.start();
         timer.start();
     }
+    public void showGamePane2(){
+        //set level
+        level=2;
+        //reset
+        phi=0;
+        TIMER_SPEED=90/level;
+        BALL_ADDING_TIMER_SPEED=(int) (TIMER_SPEED*13.5/level);
+        BALL_FLYING_TIMER_SPEED=(int) (TIMER_SPEED*0.2/level);
+        //change
+        view.remove(view.winPane);
+        view.setContentPane(view.gamePane);
+        view.gamePane.bgPane.setLevel(2);
+        player.play();
+        winPlayer.stop();
+        isFlying=false;
+        //reset timers delay
+        ballFlyingTimer.setDelay(BALL_FLYING_TIMER_SPEED);
+        ballAddingTimer=new Timer(BALL_ADDING_TIMER_SPEED, new ActionListener() {
+            int i=0;
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(i<ballTotalNum2) {
+                    model.addBall(-40, -40);
+                    i++;
+                }
+            }
+        });
+        timer=new Timer(TIMER_SPEED, new ActionListener() {
+
+            double delta=0.12;
+            double alpha;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for(int i=num;i<model.size();i++){
+                    alpha=phi-(i+numOfDeleted)*(delta);
+                    if(alpha<0.1){
+                        model.setBallPos(i, -40,-40);
+                    } else {
+                        model.setBallPos(i, getX(alpha), getY(alpha));
+                    }
+                }
+                phi+=0.01;
+
+                if(phi>2*Math.PI+0.05){
+                    showLosePane();
+                }
+            }
+        });
+        //ball backtracking timer
+        ballBacktrackingTimer=new Timer(TIMER_SPEED, new ActionListener() {
+            double delta=0.12;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for(int i=1;i<num;i++){
+                    model.setBallPos(i,getX(phiBack-i*delta),getY(phiBack-i*delta));
+                }
+                phiBack-=0.01;
+                if(intersects(model.balls.get(num-1),model.balls.get(num))){
+                    num=1;
+                    phi=phiBack;
+                    numOfDeleted=0;
+                    ballBacktrackingTimer.stop();
+                }
+            }
+        });
+        ballAddingTimer.start();
+        timer.start();
+    }
     public void showWinPane(){
         view.remove(view.gamePane);
         view.setContentPane(view.winPane);
+        player.stop();
+        winPlayer.play();
+        isFlying=true;
+        ballAddingTimer.stop();
+        timer.stop();
+    }
+    public void showWinEndPane(){
+        view.remove(view.gamePane);
+        view.setContentPane(view.winEndPane);
         player.stop();
         winPlayer.play();
         isFlying=true;
