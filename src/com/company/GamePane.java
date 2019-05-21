@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
 
 public class GamePane extends JLayeredPane {
 
-    JPanel bgPane;
+    BackgroundPane bgPane;
     PutinPane putinPane;
     Dimension putinDim;
 

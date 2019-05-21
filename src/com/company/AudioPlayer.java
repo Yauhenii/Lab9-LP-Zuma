@@ -20,8 +20,12 @@ public class AudioPlayer {
         // open audioInputStream to the clip
         clip.open(audioInputStream);
         clip.loop(Clip.LOOP_CONTINUOUSLY);
+        clip.stop();
     }
     public void play() {
         clip.start();
+    }
+    public void stop(){
+        clip.stop();
     }
 }

@@ -1,5 +1,6 @@
 package com.company;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.util.LinkedList;
@@ -11,6 +12,9 @@ public class View extends JFrame implements Observer {
     Model model;
     LinkedList<Ball> balls;
     GamePane gamePane;
+    MainMenuPane menuPane;
+    WinPane winPane;
+    LosePane losePane;
 
     JMenuBar menuBar;
     JMenu menu;
@@ -20,16 +24,35 @@ public class View extends JFrame implements Observer {
         model.registerObserver(this);
         balls=model.balls;
 
+        setMainMenuPaneProperties();
         setGamePaneProperties();
-        setMenuProperties();
+        setWinPaneProperties();
+        setLosePaneProperties();
+//        setMenuProperties();
+
+
+        setContentPane(menuPane);
         setWindowProperties();
+
+    }
+
+    private void setLosePaneProperties(){
+        losePane=new LosePane();
+    }
+
+    private void setWinPaneProperties(){
+        winPane=new WinPane();
+    }
+
+    private void setMainMenuPaneProperties(){
+        menuPane=new MainMenuPane();
     }
 
     private void setGamePaneProperties() {
         gamePane=new GamePane();
     }
 
-    void setMenuProperties(){
+    private void setMenuProperties(){
         //menuBar
         menuBar=new JMenuBar();
         setJMenuBar(menuBar);
@@ -43,8 +66,7 @@ public class View extends JFrame implements Observer {
         setResizable(false);
         setLocationRelativeTo(null);
         setTitle(TITLE);
-        setContentPane(gamePane);
-        pack();
+        setSize(ImageParser.getBackgroundDim());
     }
 
     @Override

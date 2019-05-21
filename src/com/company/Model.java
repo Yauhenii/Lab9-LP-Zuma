@@ -36,7 +36,7 @@ public class Model implements Observable {
 
     //balls
     public void addBall(int x,int y){
-        int i = random.nextInt(ImageParser.COLORS_NUM-2);
+        int i = random.nextInt(ImageParser.COLORS_NUM);
         balls.add(new Ball(ImageParser.colors[i], new Point(x,y)));
         notifyObservers(balls.size()-1);
     }

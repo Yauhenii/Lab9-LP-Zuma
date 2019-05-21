@@ -8,9 +8,9 @@ import java.util.Collections;
 
 public class Controller {
 
-    public final int TIMER_SPEED=50;
+    public final int TIMER_SPEED=90;
     public final int BALL_ADDING_TIMER_SPEED=(int) (TIMER_SPEED*13.5);
-    public final int BALL_FLYING_TIMER_SPEED=(int) (TIMER_SPEED*0.75);
+    public final int BALL_FLYING_TIMER_SPEED=(int) (TIMER_SPEED*0.2);
 
 
     public int width;
@@ -18,33 +18,53 @@ public class Controller {
     public int ballRadius;
     public int radius;
 
+    private int ballTotalNum=30;
+
     Timer timer;
     Timer ballAddingTimer;
     Timer ballFlyingTimer;
+    Timer ballBacktrackingTimer;
     Model model;
     View view;
 
     Point putinPaneCenter;
     Point windowCenter;
 
-    double phi=0;
+    double phi=0.1;
+    double phiBack=0;
 
     Dimension ballDim;
     Dimension backgroundDim;
 
     double tethaFlying;
 
+    int num;
+    int numOfDeleted;
+
     boolean isFlying;
+
+    AudioPlayer player;
+    AudioPlayer menuPlayer;
+    AudioPlayer winPlayer;
+    AudioPlayer losePlayer;
 
     Controller(){
         //MVC
         model=new Model();
         view=new View(model);
         view.setVisible(true);
+
+        //
+        //game pane
+        //
+
         //add music
         try {
-            AudioPlayer player = new AudioPlayer("song.wav");
-            player.play();
+            player = new AudioPlayer("song.wav");
+            menuPlayer = new AudioPlayer("med.wav");
+            winPlayer=new AudioPlayer("soviet-anthem.wav");
+            losePlayer = new AudioPlayer("sax.wav");
+            menuPlayer.play();
         } catch (Exception e){
             System.out.println(e.getMessage());
         }
@@ -61,7 +81,7 @@ public class Controller {
         radius=Math.min(width,height)/2-ballRadius;
 
         //flying ball
-        isFlying=false;
+        isFlying=true;
 
         //ballFlying timer
         ballFlyingTimer=new Timer(BALL_FLYING_TIMER_SPEED, new ActionListener() {
@@ -91,27 +111,48 @@ public class Controller {
                             ballFlyingTimer.stop();
                             //delete if match
                             boolean trigger=false;
+                            numOfDeleted=0;
 
+                            //backward
                             while (i+1<model.size()){
                                 if(model.get(i).getColor().getRGB()==model.get(i+1).getColor().getRGB()){
                                     model.removeBall(i+1);
+                                    numOfDeleted++;
                                     trigger=true;
                                 } else{
                                     break;
                                 }
                             }
-
+                            //forward
                             while (i-1>0){
                                 if(model.get(i).getColor().getRGB()==model.get(i-1).getColor().getRGB()){
                                     model.removeBall(i-1);
+                                    numOfDeleted++;
                                     i--;
                                     trigger=true;
                                 } else{
                                     break;
                                 }
                             }
-                            if(trigger){
+                            if(trigger) {
+                                //one
                                 model.removeBall(i);
+                                numOfDeleted++;
+                                view.gamePane.repaint();
+                            }
+                            //check
+                            if(i==model.size()){
+                                trigger=false;
+                                System.out.println(model.size());
+                            }
+                            if(model.size()==1){
+                                showWinPane();
+                            }
+                            //backtrack
+                            if(trigger){
+                                num=i;
+                                phiBack=phi;
+                                ballBacktrackingTimer.start();
                             }
                         }
                     }
@@ -124,9 +165,9 @@ public class Controller {
             int i=0;
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(i<17) {
-                    model.addBall(-40, -40);
-                    i++;
+                if(i<ballTotalNum) {
+                        model.addBall(-40, -40);
+                        i++;
                 }
             }
         });
@@ -134,21 +175,49 @@ public class Controller {
         //add ball to putin
         model.addBall(windowCenter.x-ballDim.width/2,windowCenter.y-ballDim.height/2);
 
+        num=1;
+
         //timer
         timer=new Timer(TIMER_SPEED, new ActionListener() {
 
             double delta=0.12;
+            double alpha;
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                for(int i=1;i<model.size();i++){
-                    model.setBallPos(i,getX(phi-i*delta),getY(phi-i*delta));
+                for(int i=num;i<model.size();i++){
+                    alpha=phi-(i+numOfDeleted)*(delta);
+                    if(alpha<0.1){
+                        model.setBallPos(i, -40,-40);
+                    } else {
+                        model.setBallPos(i, getX(alpha), getY(alpha));
+                    }
                 }
                 phi+=0.01;
+
+                if(phi>2*Math.PI+0.05){
+                    showLosePane();
+                }
             }
         });
-        ballAddingTimer.start();
-        timer.start();
+        //ball backtracking timer
+        ballBacktrackingTimer=new Timer(TIMER_SPEED, new ActionListener() {
+            double delta=0.12;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                for(int i=1;i<num;i++){
+                    model.setBallPos(i,getX(phiBack-i*delta),getY(phiBack-i*delta));
+                }
+                phiBack-=0.01;
+                if(intersects(model.balls.get(num-1),model.balls.get(num))){
+                    num=1;
+                    phi=phiBack;
+                    numOfDeleted=0;
+                    ballBacktrackingTimer.stop();
+                }
+            }
+        });
 
         view.addMouseMotionListener(new MouseMotionListener() {
             @Override
@@ -173,6 +242,36 @@ public class Controller {
                 }
             }
         });
+
+        //
+        //main menu
+        //
+
+        view.menuPane.playButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                showGamePane();
+            }
+        });
+        view.menuPane.exitButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                view.dispatchEvent(new WindowEvent(view,WindowEvent.WINDOW_CLOSING));
+            }
+        });
+        view.winPane.exitButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                view.dispatchEvent(new WindowEvent(view,WindowEvent.WINDOW_CLOSING));
+            }
+        });
+        view.losePane.exitButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                view.dispatchEvent(new WindowEvent(view,WindowEvent.WINDOW_CLOSING));
+            }
+        });
+
     }
 
     int getX(double phi){
@@ -188,5 +287,33 @@ public class Controller {
         Rectangle result = SwingUtilities.computeIntersection(testa.getX(), testa.getY(), testa.getWidth(), testa.getHeight(), rectB);
         return (result.getWidth() > 0 && result.getHeight() > 0);
     }
+    public void showGamePane(){
+        view.remove(view.menuPane);
+        view.setContentPane(view.gamePane);
+        player.play();
+        menuPlayer.stop();
+        isFlying=false;
+        ballAddingTimer.start();
+        timer.start();
+    }
+    public void showWinPane(){
+        view.remove(view.gamePane);
+        view.setContentPane(view.winPane);
+        player.stop();
+        winPlayer.play();
+        isFlying=true;
+        ballAddingTimer.stop();
+        timer.stop();
+    }
+    public void showLosePane(){
+        view.remove(view.gamePane);
+        view.setContentPane(view.losePane);
+        player.stop();
+        losePlayer.play();
+        isFlying=true;
+        ballAddingTimer.stop();
+        timer.stop();
+    }
+
 
 }
