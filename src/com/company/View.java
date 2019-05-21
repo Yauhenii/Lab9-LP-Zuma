@@ -12,14 +12,16 @@ public class View extends JFrame implements Observer {
     LinkedList<Ball> balls;
     GamePane gamePane;
 
-    ImageParser parser;
+    JMenuBar menuBar;
+    JMenu menu;
 
     View(Model model){
         this.model=model;
         model.registerObserver(this);
-        parser=new ImageParser();
+        balls=model.balls;
 
         setGamePaneProperties();
+        setMenuProperties();
         setWindowProperties();
     }
 
@@ -27,6 +29,14 @@ public class View extends JFrame implements Observer {
         gamePane=new GamePane();
     }
 
+    void setMenuProperties(){
+        //menuBar
+        menuBar=new JMenuBar();
+        setJMenuBar(menuBar);
+        //test menu
+        menu=new JMenu("Test");
+        menuBar.add(menu);
+    }
     void setWindowProperties(){
         //window
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -38,17 +48,12 @@ public class View extends JFrame implements Observer {
     }
 
     @Override
-    public void update(LinkedList<Ball> balls) {
-        this.balls=balls;
-        for(Component c : gamePane.getComponents()){
-            if(c instanceof JLabel){
-                gamePane.remove(c);
-            }
-        }
-        for(Ball ball : this.balls){
-            gamePane.addLabel(ball);
+    public void update(int i) {
+        if(balls.get(i)!=null){
+            gamePane.add(balls.get(i),JLayeredPane.PALETTE_LAYER);
         }
     }
+
 }
 
 

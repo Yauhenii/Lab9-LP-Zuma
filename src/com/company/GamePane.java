@@ -9,10 +9,29 @@ import java.awt.image.BufferedImage;
 
 public class GamePane extends JLayeredPane {
 
-    ImageHandler handler;
+    JPanel bgPane;
+    PutinPane putinPane;
+    Dimension putinDim;
 
     GamePane(){
         setSize(getPreferredSize());
+        setPutinProperties();
+        setBackgroundProperties();
+    }
+    private void setPutinProperties(){
+        //putin
+        putinPane=new PutinPane();
+        putinDim=ImageParser.getPutinDim();
+        putinPane.setBounds(new Rectangle(new Point((getWidth()-putinDim.width)/2,(getHeight()-putinDim.height)/2), putinDim));
+        putinPane.setOpaque(true);
+        putinPane.setBackground(new Color(0,0,0,0));
+        add(putinPane,JLayeredPane.DEFAULT_LAYER);
+    }
+    private void setBackgroundProperties(){
+        //background
+        bgPane=new BackgroundPane();
+        bgPane.setBounds(new Rectangle(new Point(0, 0), ImageParser.getBackgroundDim()));
+        add(bgPane, JLayeredPane.DEFAULT_LAYER);
     }
 
     @Override
@@ -20,39 +39,4 @@ public class GamePane extends JLayeredPane {
         return new Dimension(ImageParser.getBackgroundImage().getWidth(),ImageParser.getBackgroundImage().getHeight());
     }
 
-    void addLabel(Ball ball){
-        BufferedImage image=ImageParser.getBallImage(ball.getColor());
-        Dimension dimension=new Dimension(image.getWidth(),image.getHeight());
-
-        JLabel label=new JLabel(new ImageIcon(image));
-        label.setSize(dimension);
-        label.setLocation(new Point(ball.getCoordinate()));
-        label.addMouseListener(handler);
-        label.addMouseMotionListener(handler);
-        label.setBorder(new LineBorder(Color.BLUE,1));
-        add(label);
-    }
-
-    public class ImageHandler extends MouseAdapter {
-
-        private Point offset;
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-            JLabel label = (JLabel) e.getComponent();
-            moveToFront(label);
-            offset = e.getPoint();
-        }
-
-        @Override
-        public void mouseDragged(MouseEvent e) {
-            int x = e.getPoint().x - offset.x;
-            int y = e.getPoint().y - offset.y;
-            Component component = e.getComponent();
-            Point location = component.getLocation();
-            location.x += x;
-            location.y += y;
-            component.setLocation(location);
-        }
-    }
 }
